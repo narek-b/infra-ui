@@ -79,7 +79,7 @@ export default function Compute() {
       image: 'kubevirt/cirros-container-disk-demo:latest',
       description: '',
       password: '',
-      enablePublicIp: true,
+      enablePublicIp: false,
     });
 
     // Password confirmation state
@@ -226,18 +226,18 @@ export default function Compute() {
   };
 
   const handleCreateConfirm = async () => {
-    if (!vmForm.name || !vmForm.cpuCores || !vmForm.memoryGb) {
+    if (!vmForm.name || !vmForm.cpuCores || !vmForm.memoryGb || !vmForm.password) {
       showError('Please fill in all required fields');
       return; // Form validation
     }
 
     // Password validation
-    if (vmForm.password && vmForm.password !== passwordConfirm) {
+    if (vmForm.password !== passwordConfirm) {
       showError('Passwords do not match');
       return;
     }
 
-    if (vmForm.password && vmForm.password.length < 6) {
+    if (vmForm.password.length < 6) {
       showError('Password must be at least 6 characters long');
       return;
     }
@@ -254,7 +254,7 @@ export default function Compute() {
         image: 'kubevirt/cirros-container-disk-demo:latest',
         description: '',
         password: '',
-        enablePublicIp: true,
+        enablePublicIp: false,
       });
       setPasswordConfirm('');
       showSuccess(`VM "${vmForm.name}" created successfully`);
@@ -915,13 +915,14 @@ export default function Compute() {
 
               {/* Password */}
               <TextField
-                label="Password (Optional)"
+                label="Password"
                 type="password"
                 value={vmForm.password}
                 onChange={(e) => handleFormChange('password', e.target.value)}
                 fullWidth
+                required
                 placeholder="Enter password for VM user account"
-                helperText="Minimum 6 characters if provided"
+                helperText="Minimum 6 characters"
                 sx={{
                   '& .MuiOutlinedInput-root': {
                     borderRadius: '8px',
@@ -930,24 +931,22 @@ export default function Compute() {
               />
 
               {/* Password Confirmation */}
-              {vmForm.password && (
-                <TextField
-                  label="Confirm Password"
-                  type="password"
-                  value={passwordConfirm}
-                  onChange={(e) => setPasswordConfirm(e.target.value)}
-                  fullWidth
-                  required
-                  placeholder="Re-enter password"
-                  error={passwordConfirm !== '' && vmForm.password !== passwordConfirm}
-                  helperText={passwordConfirm !== '' && vmForm.password !== passwordConfirm ? 'Passwords do not match' : ''}
-                  sx={{
-                    '& .MuiOutlinedInput-root': {
-                      borderRadius: '8px',
-                    }
-                  }}
-                />
-              )}
+              <TextField
+                label="Confirm Password"
+                type="password"
+                value={passwordConfirm}
+                onChange={(e) => setPasswordConfirm(e.target.value)}
+                fullWidth
+                required
+                placeholder="Re-enter password"
+                error={passwordConfirm !== '' && vmForm.password !== passwordConfirm}
+                helperText={passwordConfirm !== '' && vmForm.password !== passwordConfirm ? 'Passwords do not match' : ''}
+                sx={{
+                  '& .MuiOutlinedInput-root': {
+                    borderRadius: '8px',
+                  }
+                }}
+              />
 
               {/* Enable Public IP */}
               <FormControlLabel
@@ -1002,10 +1001,10 @@ export default function Compute() {
           >
             Cancel
           </Button>
-          <Button
-            onClick={handleCreateConfirm}
-            disabled={creating || !vmForm.name}
-            variant="contained"
+                      <Button
+              onClick={handleCreateConfirm}
+              disabled={creating || !vmForm.name || !vmForm.password || vmForm.password !== passwordConfirm}
+              variant="contained"
             sx={{
               backgroundColor: '#B99F6F',
               color: 'white',
